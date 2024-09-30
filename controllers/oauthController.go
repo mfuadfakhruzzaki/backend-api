@@ -1,4 +1,3 @@
-// controllers/oauthController.go
 package controllers
 
 import (
@@ -52,6 +51,7 @@ func GoogleLogin(c *gin.Context) {
 // @Param state query string true "OAuth State"
 // @Param code query string true "OAuth Code"
 // @Success 200 {object} map[string]interface{} "JWT Token"
+// @Failure 302 {string} string "Redirects to home or error page"
 // @Failure 400 {object} map[string]interface{} "Invalid OAuth state or code"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /auth/google/callback [get]
@@ -127,6 +127,7 @@ func GithubLogin(c *gin.Context) {
 // @Param state query string true "OAuth State"
 // @Param code query string true "OAuth Code"
 // @Success 200 {object} map[string]interface{} "JWT Token"
+// @Failure 302 {string} string "Redirects to home or error page"
 // @Failure 400 {object} map[string]interface{} "Invalid OAuth state or code"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /auth/github/callback [get]
@@ -157,7 +158,6 @@ func GithubCallback(c *gin.Context) {
 	email := githubUser.Email
 	if email == "" {
 		// Attempt to fetch email via another API call if necessary
-		// Alternatively, prompt the user to provide an email
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email not available from GitHub"})
 		return
 	}

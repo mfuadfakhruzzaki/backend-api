@@ -1,7 +1,100 @@
 definitions:
+  controllers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  controllers.LoginCredentials:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  controllers.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  controllers.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  controllers.VerificationRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
   models.Package:
+    properties:
+      categories:
+        type: string
+      created_at:
+        type: string
+      data:
+        type: string
+      deleted_at:
+        type: string
+      details:
+        description: Override to string
+        type: string
+      duration:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
     type: object
   models.User:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      id:
+        type: integer
+      package:
+        $ref: '#/definitions/models.Package'
+      package_id:
+        type: integer
+      password:
+        type: string
+      phone_number:
+        type: string
+      profile_picture:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
     type: object
 info:
   contact: {}
@@ -28,6 +121,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "302":
+          description: Redirects to home or error page
+          schema:
+            type: string
         "400":
           description: Invalid OAuth state or code
           schema:
@@ -72,6 +169,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "302":
+          description: Redirects to home or error page
+          schema:
+            type: string
         "400":
           description: Invalid OAuth state or code
           schema:
@@ -106,32 +207,30 @@ paths:
         name: credentials
         required: true
         schema:
-          additionalProperties:
-            type: string
-          type: object
+          $ref: '#/definitions/controllers.LoginCredentials'
       produces:
       - application/json
       responses:
         "200":
           description: JWT token
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.SuccessResponse'
         "400":
           description: Invalid request payload
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
         "401":
           description: Unauthorized, invalid credentials or email not verified
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
         "500":
           description: Error generating token or database error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
       summary: User login
       tags:
       - Auth
@@ -142,34 +241,35 @@ paths:
       description: This endpoint allows users to register by providing email, username,
         password, and phone number. A verification email will be sent after registration.
       parameters:
-      - description: User data
+      - description: User registration data
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/controllers.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Registration successful
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.SuccessResponse'
         "400":
-          description: Invalid request payload or email/username already exists
+          description: Invalid request payload or password is empty
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "409":
+          description: Email or username already exists
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
         "500":
           description: Error creating user or sending verification email
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
       summary: Register a new user
       tags:
       - Auth
-  /auth/verify:
+  /auth/verify-email:
     post:
       consumes:
       - application/json
@@ -181,32 +281,26 @@ paths:
         name: verification
         required: true
         schema:
-          additionalProperties:
-            type: string
-          type: object
+          $ref: '#/definitions/controllers.VerificationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Email verified successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.SuccessResponse'
         "400":
           description: Invalid request payload or verification code
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
         "500":
           description: Failed to verify email
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
       summary: Verify user email
       tags:
       - Auth

@@ -6,8 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfuadfakhruzzaki/backend-api/config"
+	_ "github.com/mfuadfakhruzzaki/backend-api/docs"
 	"github.com/mfuadfakhruzzaki/backend-api/routes"
 	"github.com/mfuadfakhruzzaki/backend-api/seeds"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -28,6 +31,9 @@ func main() {
 
 	// Menyajikan file statis dari folder 'uploads'
 	router.Static("/uploads", "./uploads")
+
+	// Menambahkan rute untuk Swagger UI
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Menjalankan server pada port 8080
 	fmt.Println("Server berjalan pada port 8080")

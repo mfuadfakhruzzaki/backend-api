@@ -16,6 +16,6 @@ type Package struct {
     Data        string         `json:"data"`
     Duration    string         `json:"duration"`
     Price       float64        `json:"price"`
-    Details     datatypes.JSON `json:"details"`
+    Details     datatypes.JSON `json:"details" swaggertype:"string"`  // Override to string
     Categories  string         `json:"categories"`
 }
