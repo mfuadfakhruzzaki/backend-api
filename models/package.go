@@ -1,17 +1,21 @@
-// models/package.go
 package models
 
 import (
+	"time"
+
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
 type Package struct {
-    gorm.Model
-    Name       string         `json:"name"`
-    Data       string         `json:"data"`
-    Duration   string         `json:"duration"`
-    Price      float64        `json:"price"`
-    Details    datatypes.JSON `json:"details"`
-    Categories string         `json:"categories"`
+    ID          uint           `gorm:"primarykey" json:"id"`
+    CreatedAt   time.Time      `json:"created_at"`
+    UpdatedAt   time.Time      `json:"updated_at"`
+    DeletedAt   *time.Time     `json:"deleted_at,omitempty"`
+
+    Name        string         `json:"name"`
+    Data        string         `json:"data"`
+    Duration    string         `json:"duration"`
+    Price       float64        `json:"price"`
+    Details     datatypes.JSON `json:"details"`
+    Categories  string         `json:"categories"`
 }

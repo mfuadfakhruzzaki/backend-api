@@ -1,0 +1,354 @@
+definitions:
+  models.Package:
+    type: object
+  models.User:
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/github/callback:
+    get:
+      description: This endpoint handles the callback from GitHub after the user has
+        authenticated. It logs in the user or creates a new user account if the user
+        does not already exist.
+      parameters:
+      - description: OAuth State
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: OAuth Code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: JWT Token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid OAuth state or code
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Handle GitHub OAuth callback
+      tags:
+      - OAuth
+  /auth/github/login:
+    get:
+      description: Redirects the user to the GitHub OAuth login page
+      responses:
+        "302":
+          description: Redirects to GitHub OAuth login
+      summary: Initiate GitHub OAuth
+      tags:
+      - OAuth
+  /auth/google/callback:
+    get:
+      description: This endpoint handles the callback from Google after the user has
+        authenticated. It logs in the user or creates a new user account if the user
+        does not already exist.
+      parameters:
+      - description: OAuth State
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: OAuth Code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: JWT Token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid OAuth state or code
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Handle Google OAuth callback
+      tags:
+      - OAuth
+  /auth/google/login:
+    get:
+      description: Redirects the user to the Google OAuth login page
+      responses:
+        "302":
+          description: Redirects to Google OAuth login
+      summary: Initiate Google OAuth
+      tags:
+      - OAuth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows users to log in by providing email and password.
+        A JWT token will be returned upon successful login.
+      parameters:
+      - description: User credentials (email and password)
+        in: body
+        name: credentials
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized, invalid credentials or email not verified
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error generating token or database error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows users to register by providing email, username,
+        password, and phone number. A verification email will be sent after registration.
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Registration successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload or email/username already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error creating user or sending verification email
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
+  /auth/verify:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows users to verify their email by providing the
+        verification code sent via email.
+      parameters:
+      - description: Email and verification code
+        in: body
+        name: verification
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verified successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload or verification code
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to verify email
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Verify user email
+      tags:
+      - Auth
+  /packages:
+    get:
+      description: Retrieve a list of all available packages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of available packages
+          schema:
+            items:
+              $ref: '#/definitions/models.Package'
+            type: array
+        "500":
+          description: Error fetching packages
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all packages
+      tags:
+      - Packages
+  /packages/{id}:
+    post:
+      description: Allows a user to select a package by its ID, updates the user's
+        selected package
+      parameters:
+      - description: Package ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Package selected successfully, includes user and package information
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid package ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized, user not found in context
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Database error or error updating user package
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Select a package
+      tags:
+      - Packages
+  /users/profile:
+    get:
+      description: Retrieve the profile of the currently logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized, email not found
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Email not verified
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Database error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user profile
+      tags:
+      - User
+  /users/profile/picture:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a profile picture for the currently logged-in user
+      parameters:
+      - description: Profile picture file (jpg, jpeg, png)
+        in: formData
+        name: profile_picture
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile picture uploaded successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or file type
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized or email not found
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Email not verified
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Upload profile picture
+      tags:
+      - User
+swagger: "2.0"

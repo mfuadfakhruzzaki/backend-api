@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -6,22 +5,14 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-
 	"github.com/mfuadfakhruzzaki/backend-api/config"
-	"github.com/mfuadfakhruzzaki/backend-api/models"
 	"github.com/mfuadfakhruzzaki/backend-api/routes"
 	"github.com/mfuadfakhruzzaki/backend-api/seeds"
 )
 
 func main() {
-	// Menghubungkan ke database
+	// Menghubungkan ke database dan menjalankan migrasi di config.ConnectDatabase()
 	config.ConnectDatabase()
-
-	// Melakukan migrasi model
-	err := config.DB.AutoMigrate(&models.User{}, &models.Package{})
-	if err != nil {
-		log.Fatalf("Error migrating database: %v", err)
-	}
 
 	// Menjalankan seeding data paket
 	seeds.SeedPackages()
@@ -29,20 +20,13 @@ func main() {
 	// Membuat router baru dengan Gin
 	router := gin.Default()
 
-	// Menambahkan middleware untuk logging dan recovery (optional but recommended)
-	// Gin's Default() already includes Logger and Recovery middleware
-	// If you used gin.New(), you would need to add them manually
-	// router := gin.New()
-	// router.Use(gin.Logger())
-	// router.Use(gin.Recovery())
-
-	// Mendaftarkan semua route API terlebih dahulu
+	// Mendaftarkan semua route API
 	routes.RegisterRoutes(router)
 
 	// Menambahkan log untuk semua route yang terdaftar
 	logRoutes(router)
 
-	// Menyajikan file statis
+	// Menyajikan file statis dari folder 'uploads'
 	router.Static("/uploads", "./uploads")
 
 	// Menjalankan server pada port 8080
@@ -53,8 +37,6 @@ func main() {
 }
 
 // logRoutes logs all registered routes.
-// Gin does not provide a built-in way to iterate through routes,
-// so we need to access the underlying router's tree.
 func logRoutes(router *gin.Engine) {
 	for _, route := range router.Routes() {
 		fmt.Printf("Route registered: %s %s\n", route.Method, route.Path)

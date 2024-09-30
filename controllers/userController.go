@@ -1,4 +1,3 @@
-// controllers/userController.go
 package controllers
 
 import (
@@ -16,6 +15,18 @@ import (
 )
 
 // UploadProfilePicture handles the upload of a user's profile picture
+// @Summary Upload profile picture
+// @Description Upload a profile picture for the currently logged-in user
+// @Tags User
+// @Accept multipart/form-data
+// @Produce json
+// @Param profile_picture formData file true "Profile picture file (jpg, jpeg, png)"
+// @Success 200 {object} map[string]interface{} "Profile picture uploaded successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request or file type"
+// @Failure 401 {object} map[string]interface{} "Unauthorized or email not found"
+// @Failure 403 {object} map[string]interface{} "Email not verified"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users/profile/picture [post]
 func UploadProfilePicture(c *gin.Context) {
 	// Log the request for debugging purposes
 	fmt.Println("Received request to upload profile picture")
@@ -46,6 +57,13 @@ func UploadProfilePicture(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			fmt.Printf("Database error: %v\n", result.Error)
 		}
+		return
+	}
+
+	// Check if the email is verified before allowing profile picture upload
+	if !user.EmailVerified {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Email not verified. Please verify your email to upload a profile picture."})
+		fmt.Printf("User email not verified: %s\n", emailStr)
 		return
 	}
 
@@ -126,6 +144,16 @@ func UploadProfilePicture(c *gin.Context) {
 }
 
 // GetProfile returns the profile data of the currently logged-in user
+// @Summary Get user profile
+// @Description Retrieve the profile of the currently logged-in user
+// @Tags User
+// @Produce json
+// @Success 200 {object} models.User "User profile data"
+// @Failure 401 {object} map[string]interface{} "Unauthorized, email not found"
+// @Failure 403 {object} map[string]interface{} "Email not verified"
+// @Failure 404 {object} map[string]interface{} "User not found"
+// @Failure 500 {object} map[string]interface{} "Database error"
+// @Router /users/profile [get]
 func GetProfile(c *gin.Context) {
 	// Retrieve the user's email from the context (set by JWT middleware)
 	email, exists := c.Get(string(middleware.UserContextKey))
@@ -149,6 +177,12 @@ func GetProfile(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		}
+		return
+	}
+
+	// Check if the email is verified
+	if !user.EmailVerified {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Email not verified. Please verify your email to view profile."})
 		return
 	}
 

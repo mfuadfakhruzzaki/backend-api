@@ -35,12 +35,26 @@ type GithubUser struct {
 }
 
 // GoogleLogin initiates the OAuth flow with Google
+// @Summary Initiate Google OAuth
+// @Description Redirects the user to the Google OAuth login page
+// @Tags OAuth
+// @Success 302 "Redirects to Google OAuth login"
+// @Router /auth/google/login [get]
 func GoogleLogin(c *gin.Context) {
 	url := oauth.GoogleOauthConfig.AuthCodeURL(oauth.OauthStateString)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // GoogleCallback handles the callback from Google after user authentication
+// @Summary Handle Google OAuth callback
+// @Description This endpoint handles the callback from Google after the user has authenticated. It logs in the user or creates a new user account if the user does not already exist.
+// @Tags OAuth
+// @Param state query string true "OAuth State"
+// @Param code query string true "OAuth Code"
+// @Success 200 {object} map[string]interface{} "JWT Token"
+// @Failure 400 {object} map[string]interface{} "Invalid OAuth state or code"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/google/callback [get]
 func GoogleCallback(c *gin.Context) {
 	state := c.Query("state")
 	if state != oauth.OauthStateString {
@@ -96,12 +110,26 @@ func GoogleCallback(c *gin.Context) {
 }
 
 // GithubLogin initiates the OAuth flow with GitHub
+// @Summary Initiate GitHub OAuth
+// @Description Redirects the user to the GitHub OAuth login page
+// @Tags OAuth
+// @Success 302 "Redirects to GitHub OAuth login"
+// @Router /auth/github/login [get]
 func GithubLogin(c *gin.Context) {
 	url := oauth.GithubOauthConfig.AuthCodeURL(oauth.OauthStateString)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // GithubCallback handles the callback from GitHub after user authentication
+// @Summary Handle GitHub OAuth callback
+// @Description This endpoint handles the callback from GitHub after the user has authenticated. It logs in the user or creates a new user account if the user does not already exist.
+// @Tags OAuth
+// @Param state query string true "OAuth State"
+// @Param code query string true "OAuth Code"
+// @Success 200 {object} map[string]interface{} "JWT Token"
+// @Failure 400 {object} map[string]interface{} "Invalid OAuth state or code"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/github/callback [get]
 func GithubCallback(c *gin.Context) {
 	state := c.Query("state")
 	if state != oauth.OauthStateString {

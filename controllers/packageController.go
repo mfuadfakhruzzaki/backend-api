@@ -14,6 +14,13 @@ import (
 )
 
 // GetPackages retrieves all available packages
+// @Summary Get all packages
+// @Description Retrieve a list of all available packages
+// @Tags Packages
+// @Produce json
+// @Success 200 {array} models.Package "List of available packages"
+// @Failure 500 {object} map[string]string "Error fetching packages"
+// @Router /packages [get]
 func GetPackages(c *gin.Context) {
 	var packages []models.Package
 	if err := config.DB.Find(&packages).Error; err != nil {
@@ -25,6 +32,17 @@ func GetPackages(c *gin.Context) {
 }
 
 // SelectPackage allows a user to select a package by its ID
+// @Summary Select a package
+// @Description Allows a user to select a package by its ID, updates the user's selected package
+// @Tags Packages
+// @Param id path int true "Package ID"
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Package selected successfully, includes user and package information"
+// @Failure 400 {object} map[string]string "Invalid package ID"
+// @Failure 401 {object} map[string]string "Unauthorized, user not found in context"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Database error or error updating user package"
+// @Router /packages/{id} [post]
 func SelectPackage(c *gin.Context) {
 	// Retrieve the 'id' parameter from the URL
 	packageIDStr := c.Param("id")

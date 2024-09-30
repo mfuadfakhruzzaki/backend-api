@@ -1,4 +1,3 @@
-// middleware/authMiddleware.go
 package middleware
 
 import (
@@ -11,13 +10,17 @@ import (
 
 type ContextKey string
 
-const UserContextKey ContextKey = "userEmail"
+const (
+	UserContextKey ContextKey = "userEmail"
+	AuthHeader     string     = "Authorization"
+	BearerSchema   string     = "bearer"
+)
 
 // JWTMiddleware verifies the JWT token and adds the user's email to the Gin context
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Retrieve the Authorization header
-		authHeader := c.GetHeader("Authorization")
+		authHeader := c.GetHeader(AuthHeader)
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
 			c.Abort()
@@ -27,18 +30,19 @@ func JWTMiddleware() gin.HandlerFunc {
 		// Split the header to extract the token
 		// Expected format: "Bearer <token>"
 		tokenParts := strings.SplitN(authHeader, " ", 2)
-		if len(tokenParts) != 2 || strings.ToLower(tokenParts[0]) != "bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+		if len(tokenParts) != 2 || strings.ToLower(tokenParts[0]) != BearerSchema {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format. Expected 'Bearer <token>'"})
 			c.Abort()
 			return
 		}
 
+		// Extract the token part
 		tokenString := tokenParts[1]
 
 		// Validate the token and extract the email
 		email, err := utils.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token: " + err.Error()})
 			c.Abort()
 			return
 		}
